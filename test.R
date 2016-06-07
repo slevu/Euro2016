@@ -2,18 +2,18 @@ library(googlesheets)
 suppressMessages(library(dplyr))
 
 my_sheets <- gs_ls()
-# ti <- gs_title("Test ... Euro2016")
-gs_gap() %>% gs_copy(to = "Gapminder")
-gap <- gs_title("Gapminder")
-
-# Need to access a sheet you do not own but you have a sharing link?
-# Access it by URL!
-(GAP_URL <- gs_gap_url())
-third_party_gap <- GAP_URL %>%
-  gs_url()
-
-?gs_read()
-##- url : https://docs.google.com/spreadsheets/d/1VvRgsESFmGAdaQ4Il0H4de1A2KjwwMUcipUoeHAF-uU/edit#gid=0
+# # ti <- gs_title("Test ... Euro2016")
+# gs_gap() %>% gs_copy(to = "Gapminder")
+# gap <- gs_title("Gapminder")
+# 
+# # Need to access a sheet you do not own but you have a sharing link?
+# # Access it by URL!
+# (GAP_URL <- gs_gap_url())
+# third_party_gap <- GAP_URL %>%
+#   gs_url()
+# 
+# ?gs_read()
+# ##- url : https://docs.google.com/spreadsheets/d/1VvRgsESFmGAdaQ4Il0H4de1A2KjwwMUcipUoeHAF-uU/edit#gid=0
 
 gs <- gs_title("Copy of Euro 2016 DIDE")
 # gs_browse(gs)
@@ -37,4 +37,14 @@ class(sapply(tab[,4], function(x) strsplit(x, "-")) )
 ##- extract vector
 tab %>% select(Stephane) %>% collect %>% .[["Stephane"]]
 ##- or
-collect(select(tab, Stephane))[[1]]
+na <- names(tab[,-(1:3)])
+dplyr2mat <- function(x){
+  a <- collect(select(tab, x))[[1]]
+  b <- matrix(as.numeric(unlist(strsplit(a,"-"))), ncol = 2)
+  return(b)
+}
+x <- na[1]
+lapply(na, dplyr2mat)
+a <- collect(select(tab, Stephane))[[1]]
+
+matrix(as.numeric(unlist(strsplit(a,"-"))), ncol = 2)
