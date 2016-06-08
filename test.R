@@ -1,50 +1,57 @@
+# rm(list=ls())
+
+##---- libs ----
 library(googlesheets)
-suppressMessages(library(dplyr))
+library(dplyr)
 
-my_sheets <- gs_ls()
-# # ti <- gs_title("Test ... Euro2016")
-# gs_gap() %>% gs_copy(to = "Gapminder")
-# gap <- gs_title("Gapminder")
-# 
-# # Need to access a sheet you do not own but you have a sharing link?
-# # Access it by URL!
-# (GAP_URL <- gs_gap_url())
-# third_party_gap <- GAP_URL %>%
-#   gs_url()
-# 
-# ?gs_read()
-# ##- url : https://docs.google.com/spreadsheets/d/1VvRgsESFmGAdaQ4Il0H4de1A2KjwwMUcipUoeHAF-uU/edit#gid=0
+##---- read sheet ----
+# all_sheets <- gs_ls()
+gs <- gs_title("Euro 2016 DIDE")
 
-gs <- gs_title("Copy of Euro 2016 DIDE")
-# gs_browse(gs)
-tab <- gs_read(gs, range = cell_rows(1:37))
-?gs_read
-str(tab)
-head(tab)
-names(tab)
-tab[2,5]
-scores <- as.vector(tab[,4])
-Joe <- as.vector(tab[,5])
-##- compare scores vs Joe
-?split
-class(a)
-class(scores)
-a <- unlist(apply(scores,2, function(x) strsplit(x, "-")))
-a <- apply(a[[1]],1, as.numeric )
-matrix(as.numeric(a), ncol = 2)
-class(sapply(tab[,4], function(x) strsplit(x, "-")) )
+##---- extract predictions ----
+##- (named list of matrices)
+tab <- gs_read(gs, ws = "Group stage",  range = cell_rows(1:37))
+.a <- collect(select(tab,-(1:3)))
+preds <- lapply(.a, function(x) matrix(as.numeric(unlist(strsplit(x,"-"))), ncol = 2))
 
-##- extract vector
-tab %>% select(Stephane) %>% collect %>% .[["Stephane"]]
-##- or
-na <- names(tab[,-(1:3)])
-dplyr2mat <- function(x){
-  a <- collect(select(tab, x))[[1]]
-  b <- matrix(as.numeric(unlist(strsplit(a,"-"))), ncol = 2)
-  return(b)
+##---- simulate real score ----
+real <- matrix(rpois(72, 1.4), ncol = 2)
+
+##---- scoring system ----
+##- points
+P_SCORE <- 3
+P_RESULT <- 1
+P_BONUS <- 2
+V_BONUS <- 0.25
+
+##---- scoring function ----
+##- by game
+ss <- function(pred){
+  score <- rep(0, dim(pred)[1])
+  for (i in 1:dim(pred)[1] ){
+    score[i] <- ifelse( any(is.na(real[i,])) , 0,
+                 ifelse( identical(real[i,], pred[i,]) , P_SCORE, # score match
+                   ifelse( identical(sign(diff(real[i,])) , sign(diff(pred[i,]))), P_RESULT, # result match
+                           0) ))
+  }
+  return(score)
 }
-x <- na[1]
-lapply(na, dplyr2mat)
-a <- collect(select(tab, Stephane))[[1]]
 
-matrix(as.numeric(unlist(strsplit(a,"-"))), ncol = 2)
+##---- results without bonus ----
+rs0 <- sapply(preds, ss)
+
+##---- bonus ----
+##- games with good results rarely predicted
+rowsWithBonus <- rowSums(rs0!=0) / ncol(rs0) < V_BONUS
+##- good results
+m <- rs0 > 0
+bonusMatrix <- m * rowsWithBonus * P_BONUS
+
+##---- final results ---- 
+rs1 <- rs0 + bonusMatrix
+row.names(rs1) <- apply(tab[,2:3], 1, function(x) paste(x, collapse = " - "))
+
+##---- grand total ----
+final <- colSums(rs1)
+final[order(final, decreasing = TRUE)]
+

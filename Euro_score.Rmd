@@ -1,0 +1,83 @@
+---
+title: "Euro 2016 DIDE scores"
+author: "Stephane"
+date: "8 June 2016"
+output: html_document
+---
+
+```{r}
+library(knitr)
+read_chunk('test.R')
+```
+
+```{r libs, warning=FALSE, message=FALSE}
+```
+
+Scoring system
+```{r scoring system}
+
+```
+
+Load the google sheet
+```{r read sheet}
+```
+
+Extract the predictions
+```{r extract predictions}
+```
+
+Simulate real scores
+```{r simulate real score}
+```
+
+Scoring function
+```{r scoring function}
+```
+
+Results without bonus
+```{r results without bonus}
+```
+
+Bonus
+```{r bonus}
+```
+
+
+Final results
+```{r final results}
+```
+
+```{r, results='asis'}
+knitr::kable(rs1)
+```
+
+### Grand total
+```{r grand total}
+```
+
+
+### Examples
+```{r, echo = FALSE}
+ex0 <- which(rs0 == 0, arr.ind = T) # zero
+ex1 <- which(rs0 > 0 & bonusMatrix == 0, arr.ind = T) # no bonus
+ex2 <- which(rs0 > 0 & bonusMatrix > 0, arr.ind = T) # bonus
+exs <- list(ex0, ex1, ex2)
+rc <- list()
+for (k in 1:length(exs)){
+  rc[[k]] <- exs[[k]][sample(nrow(exs[[k]]), 1),]
+}
+```
+* For the game `r row.names(rs1)[rc[[1]][1]]`, with a real score of `r paste(real[rc[[1]][1],], collapse = " - ")`, `r colnames(rs1)[rc[[1]][2]]` predicted `r paste(preds[[rc[[1]][2]]][rc[[1]][1],], collapse = " - ")` and won `r rs0[rc[[1]][1], rc[[1]][2]]` points and `r bonusMatrix[rc[[1]][1], rc[[1]][2]]` bonus points.
+
+* For the game `r row.names(rs1)[rc[[2]][1]]`, with a real score of `r paste(real[rc[[2]][1],], collapse = " - ")`, `r colnames(rs1)[rc[[2]][2]]` predicted `r paste(preds[[rc[[2]][2]]][rc[[2]][1],], collapse = " - ")` and won `r rs0[rc[[2]][1], rc[[2]][2]]` points and `r bonusMatrix[rc[[2]][1], rc[[2]][2]]` bonus points.
+
+* For the game `r row.names(rs1)[rc[[3]][1]]`, with a real score of `r paste(real[rc[[3]][1],], collapse = " - ")`, `r colnames(rs1)[rc[[3]][2]]` predicted `r paste(preds[[rc[[3]][2]]][rc[[3]][1],], collapse = " - ")` and won `r rs0[rc[[3]][1], rc[[3]][2]]` points and `r bonusMatrix[rc[[3]][1], rc[[3]][2]]` bonus points as result was only correctly predicted by `r round(100 *  sum(rs0[rc[[3]][1],] > 0) / ncol(rs0))`%.
+
+### Todo
+* before first game, freeze the google sheet
+* add real games results
+* calculate scores of group stage
+* construct table of next 8 games based on group stage results
+* scoring system must adapts to:
+    * prediction of final result only (after potential extra time and shootouts) ?
+    * prediction of score at 90 minutes ?
