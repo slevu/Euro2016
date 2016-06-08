@@ -15,7 +15,13 @@ tab <- gs_read(gs, ws = "Group stage",  range = cell_rows(1:37))
 preds <- lapply(.a, function(x) matrix(as.numeric(unlist(strsplit(x,"-"))), ncol = 2))
 
 ##---- simulate real score ----
+##- Poisson
 real <- matrix(rpois(72, 1.4), ncol = 2)
+##- sample of DIDE
+real2 <- matrix(NA, nrow = 36, ncol = 2)
+for (i in 1:36){
+  real2[i,] <- preds[[ sample(1:length(preds), 1) ]][i, ]
+}
 
 ##---- scoring system ----
 ##- points
@@ -26,7 +32,7 @@ V_BONUS <- 0.25
 
 ##---- scoring function ----
 ##- by game
-ss <- function(pred){
+ss <- function(pred, real){
   score <- rep(0, dim(pred)[1])
   for (i in 1:dim(pred)[1] ){
     score[i] <- ifelse( any(is.na(real[i,])) , 0,
@@ -38,7 +44,7 @@ ss <- function(pred){
 }
 
 ##---- results without bonus ----
-rs0 <- sapply(preds, ss)
+rs0 <- sapply(preds, function(x) ss(x, real2))
 
 ##---- bonus ----
 ##- games with good results rarely predicted
