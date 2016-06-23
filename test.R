@@ -106,3 +106,8 @@ display2 <- display2[y,]
 
 ##---- add results in gs ----
 gs_edit_cells(gs, ws = "Results", input = display2, anchor = "A1", col_names = FALSE )
+
+##---- add row results
+# rowrs1 <- data.frame(match = apply(tab[,2:3], 1, function(x) paste(x, collapse = " - ")), rs1)
+# gs <- gs_ws_new(gs, ws = "RowResults", row_extent = nrow(rowrs1), col_extent = ncol(rowrs1) )
+# gs_edit_cells(gs, ws = "RowResults", input = rowrs1, anchor = "A1", col_names = TRUE )
