@@ -7,13 +7,13 @@ library(googlesheets)
 
 ##---- read sheet ----
 # all_sheets <- gs_ls()
-#gs <- gs_title("Euro 2016 DIDE")
-gs <- gs_title("Test ... Euro 2016 DIDE")
+gs <- gs_title("Euro 2016 DIDE")
+# gs <- gs_title("Test ... Euro 2016 DIDE")
 
 ##---- scoring system ----
 ##- points
 # scoring <- gs_read(gs, ws = "Scoring",  range = "B1:B4", col_names = FALSE)
-scoring <- gs_read(gs, ws = "Copy of Scoring",  range = "B20:B25", col_names = FALSE)
+scoring <- gs_read(gs, ws = "Scoring",  range = "B20:B25", col_names = FALSE)
 
 P_SCORE <- as.numeric(scoring[1,]) # 3
 P_RESULT <- as.numeric(scoring[2,]) # 1
@@ -58,9 +58,9 @@ for (i in 1:nrow(real)){
 # real <- matrix(as.numeric(unlist(lapply(tab[, 4], function(x) strsplit(x, "-")), use.names = FALSE)), ncol = 2, byrow = TRUE)
 
 ##- deal with NA
-# .r <- vapply(tab[, 4], function(x) strsplit(x, "-"), matrix(list(), 15, 1) )
+ .r <- vapply(tab[, 4], function(x) strsplit(x, "-"), matrix(list(), 15, 1) )
 ##- force indexing in 2 values
-# real <- matrix(as.numeric(unlist(lapply(.r, '[', 1:2))), ncol = 2, byrow = TRUE)
+ real <- matrix(as.character(unlist(lapply(.r, '[', 1:2))), ncol = 2, byrow = TRUE)
 
 ##---- scoring function ----
 ##- by game
@@ -82,14 +82,14 @@ rs0 <- sapply(preds, function(x) ss(x, real))
 
 ##---- bonuses ----
 ##- games with good results rarely predicted
-rowsBonus_R <- rowSums(rs0!=0) / ncol(rs0) < 0.5# VR_BONUS
+rowsBonus_R <- rowSums(rs0!=0) / ncol(rs0) < VR_BONUS
 ##- good results
 mr <- rs0 > 0
 bonusMatrix_R <- mr * rowsBonus_R * R_BONUS
 # sum(bonusMatrix_R)
 
 ##- games with good scores rarely predicted
-rowsBonus_S <- rowSums(rs0==3) / ncol(rs0) < 0.3# VR_BONUS
+rowsBonus_S <- rowSums(rs0==3) / ncol(rs0) < VS_BONUS
 ##- good scores
 ms <- rs0 > 2
 bonusMatrix_S <- ms * rowsBonus_S * S_BONUS
@@ -107,13 +107,13 @@ final[order(final, decreasing = TRUE)]
 ##- matrix of non null 
 .m <- rs1[, colSums(rs1) != 0]
 ##- list of pipes + name
-.b <- lapply(colnames(.m), function(x){
+#.b <- lapply(colnames(.m), function(x){
   c( rep("|", max(sum(.m[,x]) - 1, 0)), x )
 })
 ##- force indexing to max length
-display1 <- sapply(.b, '[', 1:max(final))
+#display1 <- sapply(.b, '[', 1:max(final))
 ##- mask NA
-display1[is.na(display1)] <- ""
+#display1[is.na(display1)] <- ""
 
 ##- best results centered
 z <- colSums(.m)
@@ -121,7 +121,7 @@ w <- order(z)
 n <- length(z)
 x <- order(abs(1:n - median(1:n)) + 1, decreasing = T)
 y <- w[order(x)]
-display1 <- display1[,y]
+#display1 <- display1[,y]
 
 ##---- display2 ----
 .c <- lapply(colnames(.m), function(x){
@@ -134,9 +134,10 @@ display2[is.na(display2)] <- ""
 display2 <- display2[y,]
 
 ##---- add results in gs ----
-# gs_edit_cells(gs, ws = "Results", input = display2, anchor = "A1", col_names = FALSE )
+# gs <- gs_ws_new(gs, ws = "Results2", row_extent = nrow(rs1), col_extent = 50 )
+gs_edit_cells(gs, ws = "Results2", input = display2, anchor = "A1", col_names = FALSE )
 
 ##---- add row results
-# rowrs1 <- data.frame(match = apply(tab[,2:3], 1, function(x) paste(x, collapse = " - ")), rs1)
-# gs <- gs_ws_new(gs, ws = "RowResults", row_extent = nrow(rowrs1), col_extent = ncol(rowrs1) )
-# gs_edit_cells(gs, ws = "RowResults", input = rowrs1, anchor = "A1", col_names = TRUE )
+# rawrs1 <- data.frame(match = apply(tab[,2:3], 1, function(x) paste(x, collapse = " - ")), rs1)
+# gs <- gs_ws_new(gs, ws = "RawResults", row_extent = nrow(rawrs1), col_extent = ncol(rawrs1) )
+# gs_edit_cells(gs, ws = "RawResults", input = rawrs1, anchor = "A1", col_names = TRUE )
