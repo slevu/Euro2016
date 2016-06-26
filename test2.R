@@ -68,7 +68,8 @@ for (i in 1:nrow(real)){
 ss <- function(pred, real){
   score <- rep(0, dim(pred)[1])
   for (i in 1:dim(real)[1] ){
-    score[i] <- ifelse( any(is.na(real[i,])) , 0,
+    score[i] <- ifelse( any(is.na(real[i,]), 
+                            is.na(pred[i,])) , 0,
                  ifelse( identical(real[i,], pred[i,]) , P_SCORE, # score match
                    ifelse( sign(diff( as.numeric(sub('w', '.5', real[i,])) ) ) ==
                                      sign(diff( as.numeric(sub('w', '.5', pred[i,])) ) ) , P_RESULT, # result match
@@ -108,8 +109,8 @@ final[order(final, decreasing = TRUE)]
 .m <- rs1[, colSums(rs1) != 0]
 ##- list of pipes + name
 #.b <- lapply(colnames(.m), function(x){
-  c( rep("|", max(sum(.m[,x]) - 1, 0)), x )
-})
+#   c( rep("|", max(sum(.m[,x]) - 1, 0)), x )
+# })
 ##- force indexing to max length
 #display1 <- sapply(.b, '[', 1:max(final))
 ##- mask NA
